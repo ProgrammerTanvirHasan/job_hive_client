@@ -9,6 +9,8 @@ import { jobRouter } from "./modules/job/job.route";
 import { paymentRouter } from "./modules/payment/payment.route";
 import { userRouter } from "./modules/user/user.route";
 import { voteRouter } from "./modules/vote/vote.route";
+import { notFound } from "./middleware/notFound";
+import errorHandler from "./middleware/globalErrorHandler";
 const app: Application = express();
 
 app.use(express.urlencoded({ extended: true }));
@@ -39,5 +41,6 @@ app.use("/api/vote", voteRouter);
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, TypeScript + Express!!");
 });
-
+app.use(notFound);
+app.use(errorHandler);
 export default app;
