@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "rootDir": ".",
     // "outDir": "./dist",
     "target": "ES2023",
+    "types": ["node", "express"],
     "strict": true,
     "esModuleInterop": true,
+    "ignoreDeprecations": "6.0",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },

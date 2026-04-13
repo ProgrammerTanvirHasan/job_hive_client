@@ -1,34 +1,78 @@
 import { Request, Response } from "express";
 import { applicationService } from "./application.service";
+import { applicationSchema } from "./validation";
 
-const applyJob = async (req: Request, res: Response) => {
-  const { jobId, resume, coverLetter } = req.body;
-  const userId = req.user.id;
-  const application = await applicationService.applyJob(
-    userId,
-    jobId,
-    resume,
-    coverLetter,
-  );
-  res.json(application);
+export const applyJob = async (req: Request, res: Response) => {
+  try {
+    const parsedData = applicationSchema.parse(req.body);
+
+    const userId = Number(req.user?.id);
+
+    if (!userId || isNaN(userId)) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const result = await applicationService.applyJob(
+      userId,
+      parsedData.jobId,
+      parsedData.resume,
+      parsedData.coverLetter,
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Applied successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: error.errors || error.message,
+    });
+  }
 };
 
 const getApplications = async (req: Request, res: Response) => {
-  const apps = await applicationService.getApplications();
-  res.json(apps);
-};
-const getApplicationsByJob = async (req: Request, res: Response) => {
   try {
-    const application = await applicationService.getApplicationsByJob(
-      Number(req.params.id),
-    );
-    if (!application)
-      return res.status(404).json({ message: "Application not found" });
-    res.json(application);
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+    const apps = await applicationService.getApplications();
+
+    return res.status(200).json({
+      success: true,
+      data: apps,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch applications",
+    });
   }
 };
+
+const getApplicationsByJob = async (req: Request, res: Response) => {
+  try {
+    const jobId = Number(req.params.id);
+
+    if (!jobId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid job id",
+      });
+    }
+
+    const application = await applicationService.getApplicationsByJob(jobId);
+
+    return res.status(200).json({
+      success: true,
+      data: application,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server Error",
+    });
+  }
+};
+
 export const applicationController = {
   applyJob,
   getApplications,

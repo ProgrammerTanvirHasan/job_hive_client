@@ -7,7 +7,7 @@ export const createJob = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const job = await jobService.createJob(req.body, req.user.id);
+    const job = await jobService.createJob(req.body, Number(req.user.id));
 
     return res.status(201).json({
       success: true,

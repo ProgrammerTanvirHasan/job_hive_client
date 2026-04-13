@@ -7,14 +7,24 @@ const applyJob = async (
   coverLetter?: string,
 ) => {
   return prisma.application.create({
-    data: { userId, jobId, resume, coverLetter },
+    data: {
+      userId,
+      jobId,
+      resume,
+      coverLetter: coverLetter ?? null,
+    },
   });
 };
 
-const getApplications = async () => prisma.application.findMany();
+const getApplications = async () => {
+  return prisma.application.findMany();
+};
 
-const getApplicationsByJob = async (jobId: number) =>
-  prisma.application.findMany({ where: { jobId } });
+const getApplicationsByJob = async (jobId: number) => {
+  return prisma.application.findMany({
+    where: { jobId },
+  });
+};
 
 export const applicationService = {
   applyJob,

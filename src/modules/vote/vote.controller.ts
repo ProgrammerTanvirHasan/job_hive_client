@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as voteService from "./vote.service";
+import { voteSchema } from "./validation";
 
 export const voteJobController = async (req: Request, res: Response) => {
   try {
@@ -10,18 +11,14 @@ export const voteJobController = async (req: Request, res: Response) => {
       });
     }
 
-    const userId = req.user.id;
-    const jobId = Number(req.params.jobId);
-    const { type } = req.body;
+    const userId = Number(req.user.id);
 
-    if (!type || !["UP", "DOWN"].includes(type)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid vote type",
-      });
-    }
+    const parsed = voteSchema.parse({
+      jobId: Number(req.params.jobId),
+      type: req.body.type,
+    });
 
-    const vote = await voteService.voteJob(userId, jobId, type);
+    const vote = await voteService.voteJob(userId, parsed.jobId, parsed.type);
 
     return res.status(200).json({
       success: true,
@@ -29,9 +26,9 @@ export const voteJobController = async (req: Request, res: Response) => {
       data: vote,
     });
   } catch (error: any) {
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
-      message: error.message || "Something went wrong",
+      message: error.errors || error.message,
     });
   }
 };

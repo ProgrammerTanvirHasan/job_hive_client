@@ -1,14 +1,13 @@
 import express from "express";
 import { jobController } from "./job.controller";
-import { authMiddleware } from "../../middleware/auth.Middleware";
-import { requireRole } from "../../middleware/role.middleware";
+import { authMiddleware } from "../../middleware/authMiddleware";
 
 const router = express.Router();
 
 router.post(
   "/",
-  authMiddleware,
-  requireRole(["RECRUITER", "ADMIN"]),
+  authMiddleware(),
+
   jobController.createJob,
 );
 
@@ -18,29 +17,29 @@ router.get("/:id", jobController.getJobById);
 
 router.put(
   "/:id",
-  authMiddleware,
-  requireRole(["RECRUITER", "ADMIN"]),
+  authMiddleware(),
+
   jobController.updateJob,
 );
 
 router.delete(
   "/:id",
-  authMiddleware,
-  requireRole(["RECRUITER", "ADMIN"]),
+  authMiddleware(),
+
   jobController.deleteJob,
 );
 
 router.put(
   "/:id/approve",
-  authMiddleware,
-  requireRole("ADMIN"),
+  authMiddleware(),
+
   jobController.approveJob,
 );
 
 router.put(
   "/:id/reject",
-  authMiddleware,
-  requireRole("ADMIN"),
+  authMiddleware(),
+
   jobController.rejectJob,
 );
 

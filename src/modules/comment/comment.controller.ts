@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { commentSchema } from "./validation";
 import { commentService } from "./comment.service";
 
 const createComment = async (req: Request, res: Response) => {
@@ -10,21 +11,19 @@ const createComment = async (req: Request, res: Response) => {
       });
     }
 
-    const userId = req.user.id;
-    const { jobId, content, parentId } = req.body;
+    const userId = Number(req.user.id);
 
-    if (!jobId || !content) {
-      return res.status(400).json({
-        success: false,
-        message: "jobId and content are required",
-      });
-    }
+    const parsed = commentSchema.parse({
+      jobId: Number(req.body.jobId),
+      content: req.body.content,
+      parentId: req.body.parentId ? Number(req.body.parentId) : undefined,
+    });
 
     const comment = await commentService.createComment(
       userId,
-      Number(jobId),
-      content,
-      parentId ? Number(parentId) : undefined,
+      parsed.jobId,
+      parsed.content,
+      parsed.parentId,
     );
 
     return res.status(201).json({
@@ -33,13 +32,12 @@ const createComment = async (req: Request, res: Response) => {
       data: comment,
     });
   } catch (error: any) {
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
-      message: error.message || "Something went wrong",
+      message: error.errors || error.message,
     });
   }
 };
-
 const getComments = async (req: Request, res: Response) => {
   try {
     const jobId = Number(req.params.jobId);
