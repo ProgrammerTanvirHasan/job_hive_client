@@ -11,8 +11,10 @@ import { voteRouter } from "./modules/vote/vote.route";
 import { authRouter } from "./modules/auth/auth.route";
 import { notFound } from "./middleware/notFound";
 import { globalErrorHandler } from "./middleware/globalErrorHandler";
-
+import cookieParser from "cookie-parser";
 const app: Application = express();
+
+app.use(cookieParser());
 
 app.use(express.urlencoded({ extended: true }));
 

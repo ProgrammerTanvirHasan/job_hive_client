@@ -6,14 +6,35 @@ const createComment = async (
   content: string,
   parentId?: number,
 ) => {
-  return prisma.comment.create({ data: { userId, jobId, content, parentId } });
+  try {
+    return await prisma.comment.create({
+      data: {
+        userId,
+        jobId,
+        content,
+        parentId,
+      },
+    });
+  } catch (error) {
+    throw new Error("Failed to create comment");
+  }
 };
 
 const getCommentsByJob = async (jobId: number) => {
-  return prisma.comment.findMany({
-    where: { jobId },
-    include: { replies: true },
-  });
+  try {
+    return await prisma.comment.findMany({
+      where: { jobId },
+      include: {
+        replies: true,
+        user: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  } catch (error) {
+    throw new Error("Failed to fetch comments");
+  }
 };
 
 export const commentService = {

@@ -5,9 +5,21 @@ export const voteJob = async (
   jobId: number,
   type: "UP" | "DOWN",
 ) => {
-  return prisma.vote.upsert({
-    where: { userId_jobId: { userId, jobId } },
-    update: { type },
-    create: { userId, jobId, type },
-  });
+  try {
+    return await prisma.vote.upsert({
+      where: {
+        userId_jobId: { userId, jobId },
+      },
+      update: {
+        type,
+      },
+      create: {
+        userId,
+        jobId,
+        type,
+      },
+    });
+  } catch (error) {
+    throw new Error("Failed to vote job");
+  }
 };

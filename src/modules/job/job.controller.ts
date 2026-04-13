@@ -1,69 +1,132 @@
 import { Request, Response } from "express";
 import { jobService } from "./job.service";
 
-
-const createJob = async (req: Request, res: Response) => {
+export const createJob = async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const job = await jobService.createJob(req.body, req.user.id);
-    res.json(job);
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+
+    return res.status(201).json({
+      success: true,
+      message: "Job created successfully",
+      data: job,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server Error",
+    });
   }
 };
 
-const getAllJob = async (req: Request, res: Response) => {
+export const getAllJob = async (req: Request, res: Response) => {
   try {
     const jobs = await jobService.getAllJobs();
-    res.json(jobs);
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+
+    return res.status(200).json({
+      success: true,
+      data: jobs,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const getJobById = async (req: Request, res: Response) => {
+export const getJobById = async (req: Request, res: Response) => {
   try {
     const job = await jobService.getJobById(Number(req.params.id));
-    if (!job) return res.status(404).json({ message: "Job not found" });
-    res.json(job);
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: job,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const updateJob = async (req: Request, res: Response) => {
+export const updateJob = async (req: Request, res: Response) => {
   try {
     const job = await jobService.updateJob(Number(req.params.id), req.body);
-    res.json(job);
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+
+    return res.status(200).json({
+      success: true,
+      message: "Job updated",
+      data: job,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const deleteJob = async (req: Request, res: Response) => {
+export const deleteJob = async (req: Request, res: Response) => {
   try {
     await jobService.deleteJob(Number(req.params.id));
-    res.json({ message: "Job deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+
+    return res.status(200).json({
+      success: true,
+      message: "Job deleted successfully",
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const approveJob = async (req: Request, res: Response) => {
+export const approveJob = async (req: Request, res: Response) => {
   try {
     const job = await jobService.approveJob(Number(req.params.id));
-    res.json(job);
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+
+    return res.status(200).json({
+      success: true,
+      message: "Job approved",
+      data: job,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const rejectJob = async (req: Request, res: Response) => {
+export const rejectJob = async (req: Request, res: Response) => {
   try {
     const { feedback } = req.body;
+
     const job = await jobService.rejectJob(Number(req.params.id), feedback);
-    res.json(job);
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+
+    return res.status(200).json({
+      success: true,
+      message: "Job rejected",
+      data: job,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
