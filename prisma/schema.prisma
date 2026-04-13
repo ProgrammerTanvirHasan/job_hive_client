@@ -55,7 +55,7 @@ model Job {
 
 
   recruiterId Int
-  recruiter   User @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+  recruiter   User @relation(fields: [recruiterId], references: [id], onDelete: Restrict)
 
   applications Application[]
   payments     Payment[]
