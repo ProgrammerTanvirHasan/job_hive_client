@@ -1,16 +1,17 @@
-import { toNodeHandler } from "better-auth/node";
 import express, { Application, Request, Response } from "express";
-import { auth } from "./lib/auth";
+
 import cors from "cors";
 import { applicationRouter } from "./modules/application/application.route";
-import { authRouter } from "./modules/auth/auth.route";
+
 import { commentRouter } from "./modules/comment/comment.route";
 import { jobRouter } from "./modules/job/job.route";
 import { paymentRouter } from "./modules/payment/payment.route";
 import { userRouter } from "./modules/user/user.route";
 import { voteRouter } from "./modules/vote/vote.route";
+import { authRouter } from "./modules/auth/auth.route";
 import { notFound } from "./middleware/notFound";
-import errorHandler from "./middleware/globalErrorHandler";
+import { globalErrorHandler } from "./middleware/globalErrorHandler";
+
 const app: Application = express();
 
 app.use(express.urlencoded({ extended: true }));
@@ -27,7 +28,6 @@ app.use(
   }),
 );
 
-app.all("/api/auth/*splat", toNodeHandler(auth));
 app.use(express.json());
 
 app.use("/api/application", applicationRouter);
@@ -41,6 +41,9 @@ app.use("/api/vote", voteRouter);
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, TypeScript + Express!!");
 });
+
 app.use(notFound);
-app.use(errorHandler);
+
+app.use(globalErrorHandler);
+
 export default app;

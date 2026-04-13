@@ -1,14 +1,17 @@
-export default function errorHandler(
-  err: any,
-  _req: any,
-  res: any,
-  _next: any,
-) {
-  console.error("🔥 FULL ERROR:", err);
-  console.error("🔥 STACK:", err?.stack);
+import { Request, Response, NextFunction } from "express";
 
-  res.status(500).json({
+export const globalErrorHandler = (
+  err: any,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  console.error("🔥 Error:", err);
+
+  const statusCode = err.statusCode || 500;
+
+  res.status(statusCode).json({
     success: false,
-    message: err?.message || "Internal Server Error",
+    message: err.message || "Internal Server Error",
   });
-}
+};
