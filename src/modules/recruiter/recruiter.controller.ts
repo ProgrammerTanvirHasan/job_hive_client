@@ -11,11 +11,10 @@ const applyRecruiter = async (req: Request, res: Response) => {
       });
     }
 
-    
     const parsedData = recruiterApplySchema.parse(req.body);
 
     const result = await recruiterService.applyRecruiter(
-      req.user.id,
+      Number(req.user.id),
       parsedData,
     );
 
@@ -41,7 +40,7 @@ const getMyRequest = async (req: Request, res: Response) => {
       });
     }
 
-    const data = await recruiterService.getMyRequest(req.user.id);
+    const data = await recruiterService.getMyRequest(Number(req.user.id));
 
     return res.status(200).json({
       success: true,

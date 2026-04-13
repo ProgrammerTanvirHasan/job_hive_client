@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
-
+import { Role } from "../../generated/prisma";
 
 const rawBaseUrl = (process.env.BETTER_AUTH_URL || "").trim();
 const baseURL = rawBaseUrl.replace(/\/api\/auth\/?$/i, "") || rawBaseUrl;
@@ -28,7 +28,7 @@ export const auth = betterAuth({
     additionalFields: {
       role: {
         type: "string",
-        defaultValue: "STUDENT",
+        defaultValue: Role.USER,
         required: false,
       },
       status: {

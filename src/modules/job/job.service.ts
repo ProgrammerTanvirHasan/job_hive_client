@@ -47,7 +47,7 @@ const rejectJob = async (id: number, feedback: string) => {
     where: { id },
     data: {
       status: "REJECTED",
-      rejectionReason: feedback, // ✅ FIXED (DON'T overwrite description)
+      rejectionReason: feedback, 
     },
   });
 };

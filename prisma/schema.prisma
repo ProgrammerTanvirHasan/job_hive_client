@@ -205,6 +205,8 @@ model RecruiterRequest {
   id          Int      @id @default(autoincrement())
   company     String
   experience  String
+  portfolio   String?
+  linkedin    String?
   status      String   @default("PENDING")
 
   createdAt   DateTime @default(now())
