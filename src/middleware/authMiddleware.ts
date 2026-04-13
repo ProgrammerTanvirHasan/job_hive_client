@@ -1,27 +1,22 @@
 import { NextFunction, Request, Response } from "express";
 import { auth } from "../lib/auth";
 import { prisma } from "../lib/prisma";
-
-export enum UserRole {
-  ADMIN = "ADMIN",
-  RECRUITER = "RECRUITER",
-  USER = "USER",
-}
+import { Role, UserStatus } from "../../generated/prisma";
 
 declare global {
   namespace Express {
     interface Request {
       user?: {
-        id: string;
+        id: number;
         name?: string | null;
         email: string;
-        role: UserRole;
+        role: Role;
       };
     }
   }
 }
 
-export const authMiddleware = (...roles: UserRole[]) => {
+export const authMiddleware = (...allowedRoles: Role[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const session = await auth.api.getSession({
@@ -35,9 +30,24 @@ export const authMiddleware = (...roles: UserRole[]) => {
         });
       }
 
+      const userId = Number(session.user.id);
+
+      if (isNaN(userId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid user ID",
+        });
+      }
+
       const dbUser = await prisma.user.findUnique({
-        where: { id: Number(session.user.id) },
-        select: { status: true, role: true },
+        where: { id: userId },
+        select: {
+          id: true,
+          status: true,
+          role: true,
+          name: true,
+          email: true,
+        },
       });
 
       if (!dbUser) {
@@ -47,21 +57,28 @@ export const authMiddleware = (...roles: UserRole[]) => {
         });
       }
 
-      if (dbUser.status === "BANNED") {
+      if (dbUser.status === UserStatus.BANNED) {
         return res.status(403).json({
           success: false,
-          message: "Account is suspended",
+          message: "Account is banned",
+        });
+      }
+
+      if (dbUser.status === UserStatus.INACTIVE) {
+        return res.status(403).json({
+          success: false,
+          message: "Account is deactivated",
         });
       }
 
       req.user = {
-        id: session.user.id,
-        name: session.user.name,
-        email: session.user.email,
-        role: dbUser.role as UserRole,
+        id: dbUser.id,
+        name: dbUser.name,
+        email: dbUser.email,
+        role: dbUser.role,
       };
 
-      if (roles.length && !roles.includes(req.user.role)) {
+      if (allowedRoles.length > 0 && !allowedRoles.includes(dbUser.role)) {
         return res.status(403).json({
           success: false,
           message: "Forbidden: insufficient permissions",
