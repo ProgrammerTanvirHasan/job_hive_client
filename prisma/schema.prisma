@@ -1,9 +1,162 @@
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
+
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  name          String?
+  email         String   @unique
+  password      String
+  role          Role     @default(USER)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  emailVerified Boolean  @default(false)
+  image         String?
+  status        String?  @default("ACTIVE")
+
+  jobs         Job[]         @relation("RecruiterJobs")
+  applications Application[]
+  payments     Payment[]
+  votes        Vote[]
+  comments     Comment[]
+  sessions     Session[]
+  accounts     Account[]
+
+  @@map("user")
+}
+
+model Job {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  company     String
+  location    String
+  salary      String?
+  category    String
+  isPaid      Boolean   @default(false)
+  price       Float?
+  status      JobStatus @default(PENDING)
+  createdAt   DateTime  @default(now())
+
+  recruiter   User @relation("RecruiterJobs", fields: [recruiterId], references: [id])
+  recruiterId Int
+
+  applications Application[]
+  payments     Payment[]
+  votes        Vote[]
+  comments     Comment[]
+}
+
+model Application {
+  id          Int               @id @default(autoincrement())
+  resume      String
+  coverLetter String?
+  status      ApplicationStatus @default(PENDING)
+  createdAt   DateTime          @default(now())
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  job   Job @relation(fields: [jobId], references: [id])
+  jobId Int
+}
+
+model Payment {
+  id        Int           @id @default(autoincrement())
+  amount    Float
+  status    PaymentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  job   Job @relation(fields: [jobId], references: [id])
+  jobId Int
+}
+
+model Vote {
+  id   Int      @id @default(autoincrement())
+  type VoteType
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  job   Job @relation(fields: [jobId], references: [id])
+  jobId Int
+
+  @@unique([userId, jobId])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  job   Job @relation(fields: [jobId], references: [id])
+  jobId Int
+
+  parentId Int?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("CommentReplies")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id         String @id
+  accountId  String
+  providerId String
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }
 
 enum Role {
@@ -34,96 +187,4 @@ enum PaymentStatus {
   PENDING
   SUCCESS
   FAILED
-}
-
-model User {
-  id          Int       @id @default(autoincrement())
-  name        String?
-  email       String    @unique
-  password    String
-  role        Role      @default(USER)
-  createdAt   DateTime  @default(now())
-  jobs        Job[]     @relation("RecruiterJobs")
-  applications Application[]
-  payments    Payment[]
-  votes       Vote[]
-  comments    Comment[]
-}
-
-model Job {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String
-  company     String
-  location    String
-  salary      String?
-  category    String
-  isPaid      Boolean   @default(false)
-  price       Float?
-  status      JobStatus @default(PENDING)
-  createdAt   DateTime  @default(now())
-
-  recruiter   User      @relation("RecruiterJobs", fields: [recruiterId], references: [id])
-  recruiterId Int
-
-  applications Application[]
-  payments     Payment[]
-  votes        Vote[]
-  comments     Comment[]
-}
-
-model Application {
-  id          Int               @id @default(autoincrement())
-  resume      String
-  coverLetter String?
-  status      ApplicationStatus @default(PENDING)
-  createdAt   DateTime          @default(now())
-
-  user        User @relation(fields: [userId], references: [id])
-  userId      Int
-
-  job         Job  @relation(fields: [jobId], references: [id])
-  jobId       Int
-}
-
-model Payment {
-  id        Int           @id @default(autoincrement())
-  amount    Float
-  status    PaymentStatus @default(PENDING)
-  createdAt DateTime      @default(now())
-
-  user      User @relation(fields: [userId], references: [id])
-  userId    Int
-
-  job       Job  @relation(fields: [jobId], references: [id])
-  jobId     Int
-}
-
-model Vote {
-  id      Int      @id @default(autoincrement())
-  type    VoteType
-
-  user    User @relation(fields: [userId], references: [id])
-  userId  Int
-
-  job     Job  @relation(fields: [jobId], references: [id])
-  jobId   Int
-
-  @@unique([userId, jobId]) 
-}
-
-model Comment {
-  id        Int       @id @default(autoincrement())
-  content   String
-  createdAt DateTime  @default(now())
-
-  user      User @relation(fields: [userId], references: [id])
-  userId    Int
-
-  job       Job  @relation(fields: [jobId], references: [id])
-  jobId     Int
-
-  parentId  Int?
-  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
-  replies   Comment[] @relation("CommentReplies")
 }
