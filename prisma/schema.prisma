@@ -7,28 +7,35 @@ datasource db {
   provider = "postgresql"
 }
 
+
 model User {
   id            Int      @id @default(autoincrement())
   name          String?
   email         String   @unique
   password      String
   role          Role     @default(USER)
+  status        String   @default("ACTIVE")
+  image         String?
+
+  emailVerified Boolean  @default(false)
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  emailVerified Boolean  @default(false)
-  image         String?
-  status        String?  @default("ACTIVE")
 
-  jobs         Job[]         @relation("RecruiterJobs")
-  applications Application[]
-  payments     Payment[]
-  votes        Vote[]
-  comments     Comment[]
-  sessions     Session[]
-  accounts     Account[]
+
+  jobs              Job[]
+  applications      Application[]
+  payments          Payment[]
+  votes             Vote[]
+  comments          Comment[]
+  sessions          Session[]
+  accounts          Account[]
+  recruiterRequests RecruiterRequest[]
 
   @@map("user")
 }
+
+
 
 model Job {
   id          Int       @id @default(autoincrement())
@@ -38,19 +45,27 @@ model Job {
   location    String
   salary      String?
   category    String
+
   isPaid      Boolean   @default(false)
   price       Float?
+
   status      JobStatus @default(PENDING)
+
   createdAt   DateTime  @default(now())
 
-  recruiter   User @relation("RecruiterJobs", fields: [recruiterId], references: [id])
+
   recruiterId Int
+  recruiter   User @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
 
   applications Application[]
   payments     Payment[]
   votes        Vote[]
   comments     Comment[]
+
+  @@index([recruiterId])
 }
+
+
 
 model Application {
   id          Int               @id @default(autoincrement())
@@ -59,12 +74,17 @@ model Application {
   status      ApplicationStatus @default(PENDING)
   createdAt   DateTime          @default(now())
 
-  user   User @relation(fields: [userId], references: [id])
   userId Int
+  jobId  Int
 
-  job   Job @relation(fields: [jobId], references: [id])
-  jobId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([jobId])
 }
+
+
 
 model Payment {
   id        Int           @id @default(autoincrement())
@@ -72,50 +92,66 @@ model Payment {
   status    PaymentStatus @default(PENDING)
   createdAt DateTime      @default(now())
 
-  user   User @relation(fields: [userId], references: [id])
   userId Int
+  jobId  Int
 
-  job   Job @relation(fields: [jobId], references: [id])
-  jobId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([jobId])
 }
+
+
 
 model Vote {
   id   Int      @id @default(autoincrement())
   type VoteType
 
-  user   User @relation(fields: [userId], references: [id])
   userId Int
+  jobId  Int
 
-  job   Job @relation(fields: [jobId], references: [id])
-  jobId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@unique([userId, jobId])
+  @@index([jobId])
 }
+
+
 
 model Comment {
   id        Int      @id @default(autoincrement())
   content   String
   createdAt DateTime @default(now())
 
-  user   User @relation(fields: [userId], references: [id])
   userId Int
-
-  job   Job @relation(fields: [jobId], references: [id])
-  jobId Int
-
+  jobId  Int
   parentId Int?
-  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
-  replies  Comment[] @relation("CommentReplies")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+
+  parent  Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentThread")
+
+  @@index([jobId])
+  @@index([userId])
 }
 
+
+
 model Session {
-  id        String   @id
+  id        String   @id @default(cuid())
   expiresAt DateTime
   token     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
   ipAddress String?
   userAgent String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   userId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -124,8 +160,9 @@ model Session {
   @@map("session")
 }
 
+
 model Account {
-  id         String @id
+  id         String @id @default(cuid())
   accountId  String
   providerId String
 
@@ -147,17 +184,38 @@ model Account {
   @@map("account")
 }
 
+
+
 model Verification {
-  id         String   @id
+  id         String   @id @default(cuid())
   identifier String
   value      String
   expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([identifier])
   @@map("verification")
 }
+
+
+
+model RecruiterRequest {
+  id          Int      @id @default(autoincrement())
+  company     String
+  experience  String
+  status      String   @default("PENDING")
+
+  createdAt   DateTime @default(now())
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/* ================= ENUMS ================= */
 
 enum Role {
   ADMIN
