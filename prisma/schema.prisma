@@ -14,7 +14,7 @@ model User {
   email         String   @unique
   password      String
   role          Role     @default(USER)
-  status        String   @default("ACTIVE")
+status UserStatus @default(ACTIVE)
   image         String?
 
   emailVerified Boolean  @default(false)
@@ -224,6 +224,12 @@ enum Role {
   RECRUITER
   USER
 }
+enum UserStatus {
+  ACTIVE
+  BANNED
+  INACTIVE
+}
+
 
 enum JobStatus {
   PENDING
