@@ -38,11 +38,12 @@ const createComment = async (req: Request, res: Response) => {
     });
   }
 };
+
 const getComments = async (req: Request, res: Response) => {
   try {
     const jobId = Number(req.params.jobId);
 
-    if (!jobId) {
+    if (isNaN(jobId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid jobId",

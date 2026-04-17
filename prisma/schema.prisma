@@ -65,7 +65,7 @@ model Job {
   @@index([recruiterId])
 }
 
-
+//aplicationdone/////////////////////////////////
 model Application {
   id          Int               @id @default(autoincrement())
   resume      String
@@ -120,11 +120,12 @@ model Vote {
 }
 
 
-
+//comment done////////////////////////////
 model Comment {
   id        Int      @id @default(autoincrement())
   content   String
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   userId Int
   jobId  Int
@@ -133,12 +134,12 @@ model Comment {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
-
   parent  Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
   replies Comment[] @relation("CommentThread")
 
   @@index([jobId])
   @@index([userId])
+  @@index([parentId])
 }
 
 
