@@ -1,13 +1,15 @@
 import { Request, Response } from "express";
 import { jobService } from "./job.service";
 
-export const createJob = async (req: Request, res: Response) => {
+const createJob = async (req: Request, res: Response) => {
   try {
-    if (!req.user) {
+    const userId = Number(req.user?.id);
+
+    if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const job = await jobService.createJob(req.body, Number(req.user.id));
+    const job = await jobService.createJob(req.body, userId);
 
     return res.status(201).json({
       success: true,
@@ -17,12 +19,12 @@ export const createJob = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Server Error",
+      message: error.message,
     });
   }
 };
 
-export const getAllJob = async (req: Request, res: Response) => {
+const getAllJob = async (req: Request, res: Response) => {
   try {
     const jobs = await jobService.getAllJobs();
 
@@ -38,7 +40,7 @@ export const getAllJob = async (req: Request, res: Response) => {
   }
 };
 
-export const getJobById = async (req: Request, res: Response) => {
+const getJobById = async (req: Request, res: Response) => {
   try {
     const job = await jobService.getJobById(Number(req.params.id));
 
@@ -61,9 +63,15 @@ export const getJobById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateJob = async (req: Request, res: Response) => {
+const updateJob = async (req: Request, res: Response) => {
   try {
-    const job = await jobService.updateJob(Number(req.params.id), req.body);
+    const userId = Number(req.user?.id);
+
+    const job = await jobService.updateJob(
+      Number(req.params.id),
+      req.body,
+      userId,
+    );
 
     return res.status(200).json({
       success: true,
@@ -78,9 +86,11 @@ export const updateJob = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteJob = async (req: Request, res: Response) => {
+const deleteJob = async (req: Request, res: Response) => {
   try {
-    await jobService.deleteJob(Number(req.params.id));
+    const userId = Number(req.user?.id);
+
+    await jobService.deleteJob(Number(req.params.id), userId);
 
     return res.status(200).json({
       success: true,
@@ -94,7 +104,7 @@ export const deleteJob = async (req: Request, res: Response) => {
   }
 };
 
-export const approveJob = async (req: Request, res: Response) => {
+const approveJob = async (req: Request, res: Response) => {
   try {
     const job = await jobService.approveJob(Number(req.params.id));
 
@@ -111,7 +121,7 @@ export const approveJob = async (req: Request, res: Response) => {
   }
 };
 
-export const rejectJob = async (req: Request, res: Response) => {
+const rejectJob = async (req: Request, res: Response) => {
   try {
     const { feedback } = req.body;
 

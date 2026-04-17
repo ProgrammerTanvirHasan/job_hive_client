@@ -37,8 +37,10 @@ status UserStatus @default(ACTIVE)
 
 
 
+//job done////////////////
 model Job {
   id          Int       @id @default(autoincrement())
+
   title       String
   description String
   company     String
@@ -51,8 +53,10 @@ model Job {
 
   status      JobStatus @default(PENDING)
 
-  createdAt   DateTime  @default(now())
+  rejectionReason String?
 
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   recruiterId Int
   recruiter   User @relation(fields: [recruiterId], references: [id], onDelete: Restrict)
@@ -63,6 +67,8 @@ model Job {
   comments     Comment[]
 
   @@index([recruiterId])
+  @@index([status])
+  @@index([category])
 }
 
 //aplicationdone/////////////////////////////////
