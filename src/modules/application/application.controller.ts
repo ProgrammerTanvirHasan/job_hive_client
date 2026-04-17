@@ -2,13 +2,13 @@ import { Request, Response } from "express";
 import { applicationService } from "./application.service";
 import { applicationSchema } from "./validation";
 
-export const applyJob = async (req: Request, res: Response) => {
+const applyJob = async (req: Request, res: Response) => {
   try {
     const parsedData = applicationSchema.parse(req.body);
 
     const userId = Number(req.user?.id);
 
-    if (!userId || isNaN(userId)) {
+    if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
@@ -27,14 +27,17 @@ export const applyJob = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.errors || error.message,
+      message: error.message,
     });
   }
 };
 
+
 const getApplications = async (req: Request, res: Response) => {
   try {
-    const apps = await applicationService.getApplications();
+    const userId = Number(req.user?.id);
+
+    const apps = await applicationService.getApplications(userId);
 
     return res.status(200).json({
       success: true,
@@ -43,7 +46,7 @@ const getApplications = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to fetch applications",
+      message: error.message,
     });
   }
 };
@@ -59,16 +62,16 @@ const getApplicationsByJob = async (req: Request, res: Response) => {
       });
     }
 
-    const application = await applicationService.getApplicationsByJob(jobId);
+    const applications = await applicationService.getApplicationsByJob(jobId);
 
     return res.status(200).json({
       success: true,
-      data: application,
+      data: applications,
     });
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Server Error",
+      message: error.message,
     });
   }
 };

@@ -20,7 +20,7 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const session = await auth.api.getSession({
-        headers: req.headers as any,
+        headers: req.headers as HeadersInit,
       });
 
       if (!session || !session.user) {
@@ -41,13 +41,6 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
 
       const dbUser = await prisma.user.findUnique({
         where: { id: userId },
-        select: {
-          id: true,
-          status: true,
-          role: true,
-          name: true,
-          email: true,
-        },
       });
 
       if (!dbUser) {
@@ -57,17 +50,13 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
         });
       }
 
-      if (dbUser.status === UserStatus.BANNED) {
+      if (dbUser.status !== UserStatus.ACTIVE) {
         return res.status(403).json({
           success: false,
-          message: "Account is banned",
-        });
-      }
-
-      if (dbUser.status === UserStatus.INACTIVE) {
-        return res.status(403).json({
-          success: false,
-          message: "Account is deactivated",
+          message:
+            dbUser.status === UserStatus.BANNED
+              ? "Account is banned"
+              : "Account is deactivated",
         });
       }
 
@@ -87,6 +76,8 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
 
       next();
     } catch (error) {
+      console.error("Auth Middleware Error:", error);
+
       return res.status(500).json({
         success: false,
         message: "Authentication failed",

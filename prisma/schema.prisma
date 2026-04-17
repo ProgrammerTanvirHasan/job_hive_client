@@ -66,13 +66,14 @@ model Job {
 }
 
 
-
 model Application {
   id          Int               @id @default(autoincrement())
   resume      String
   coverLetter String?
   status      ApplicationStatus @default(PENDING)
+
   createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   userId Int
   jobId  Int
@@ -80,10 +81,10 @@ model Application {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-  @@index([jobId])
+  @@unique([userId, jobId])  
+  @@index([userId])           
+  @@index([jobId])         
 }
-
 
 
 model Payment {
