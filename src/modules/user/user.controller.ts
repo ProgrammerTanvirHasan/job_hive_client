@@ -20,11 +20,17 @@ const getAllUsers = async (req: Request, res: Response) => {
 const getUser = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
+    const userId = Number(req.user?.id);
+    const role = req.user?.role;
 
-    if (isNaN(id)) {
-      return res.status(400).json({
+    if (!userId || !role) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    if (role !== "ADMIN" && userId !== id) {
+      return res.status(403).json({
         success: false,
-        message: "Invalid user ID",
+        message: "Forbidden",
       });
     }
 
@@ -45,11 +51,17 @@ const getUser = async (req: Request, res: Response) => {
 const updateUserController = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
+    const userId = Number(req.user?.id);
+    const role = req.user?.role;
 
-    if (isNaN(id)) {
-      return res.status(400).json({
+    if (!userId || !role) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    if (role !== "ADMIN" && userId !== id) {
+      return res.status(403).json({
         success: false,
-        message: "Invalid user ID",
+        message: "Forbidden",
       });
     }
 
@@ -72,7 +84,7 @@ const deleteUserController = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
 
-    if (isNaN(id)) {
+    if (!id) {
       return res.status(400).json({
         success: false,
         message: "Invalid user ID",
@@ -97,7 +109,7 @@ const restoreUserController = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
 
-    if (isNaN(id)) {
+    if (!id) {
       return res.status(400).json({
         success: false,
         message: "Invalid user ID",

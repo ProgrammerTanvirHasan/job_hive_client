@@ -32,6 +32,10 @@ const updateUser = async (id: number, data: any) => {
     throw new Error("User not found or inactive");
   }
 
+  if (data.role) {
+    throw new Error("You cannot change role");
+  }
+
   return prisma.user.update({
     where: { id },
     data,
