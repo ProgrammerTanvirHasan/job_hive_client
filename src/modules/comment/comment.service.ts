@@ -33,7 +33,7 @@ const createComment = async (
       userId,
       jobId,
       content,
-      parentId,
+      parentId: parentId ?? null,
     },
     include: {
       user: true,
@@ -42,22 +42,27 @@ const createComment = async (
 };
 
 const getCommentsByJob = async (jobId: number) => {
-  try {
-    return await prisma.comment.findMany({
-      where: { jobId ,parentId: null},
-      include: {
-        replies: true,
-        user: true,
+  return prisma.comment.findMany({
+    where: {
+      jobId,
+      parentId: null,
+    },
+    include: {
+      user: true,
+      replies: {
+        include: {
+          user: true,
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-  } catch (error) {
-    throw new Error("Failed to fetch comments");
-  }
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 };
-
 
 export const commentService = {
   createComment,

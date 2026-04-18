@@ -1,3 +1,4 @@
+import { JobStatus, Role } from "../../../generated/prisma";
 import { prisma } from "../../lib/prisma";
 
 const createJob = async (data: any, userId: number) => {
@@ -5,14 +6,14 @@ const createJob = async (data: any, userId: number) => {
     data: {
       ...data,
       recruiterId: userId,
-      status: "PENDING",
+      status: JobStatus.PENDING,
     },
   });
 };
 
 const getAllJobs = async () => {
   return prisma.job.findMany({
-    where: { status: "APPROVED" },
+    where: { status: JobStatus.APPROVED },
     include: {
       recruiter: true,
     },
@@ -39,7 +40,7 @@ const updateJob = async (
 
   if (!job) throw new Error("Job not found");
 
-  if (role !== "ADMIN" && job.recruiterId !== userId) {
+  if (role !== Role.ADMIN && job.recruiterId !== userId) {
     throw new Error("Not authorized");
   }
 
@@ -54,7 +55,7 @@ const deleteJob = async (id: number, userId: number, role: string) => {
 
   if (!job) throw new Error("Job not found");
 
-  if (role !== "ADMIN" && job.recruiterId !== userId) {
+  if (role !== Role.ADMIN && job.recruiterId !== userId) {
     throw new Error("Not authorized");
   }
 
@@ -73,12 +74,17 @@ const approveJob = async (jobId: number) => {
 
     const updatedJob = await tx.job.update({
       where: { id: jobId },
-      data: { status: "APPROVED" },
+      data: { status: JobStatus.APPROVED },
     });
 
-    await tx.user.update({
-      where: { id: job.recruiterId },
-      data: { role: "RECRUITER" },
+    await tx.user.updateMany({
+      where: {
+        id: job.recruiterId,
+        role: Role.USER,
+      },
+      data: {
+        role: Role.RECRUITER,
+      },
     });
 
     return updatedJob;
@@ -89,7 +95,7 @@ const rejectJob = async (id: number, feedback: string) => {
   return prisma.job.update({
     where: { id },
     data: {
-      status: "REJECTED",
+      status: JobStatus.REJECTED,
       rejectionReason: feedback,
     },
   });

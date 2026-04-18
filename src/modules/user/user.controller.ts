@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { userService } from "./user.service";
+import { Role } from "../../../generated/prisma";
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -23,11 +24,14 @@ const getUser = async (req: Request, res: Response) => {
     const userId = Number(req.user?.id);
     const role = req.user?.role;
 
-    if (!userId || !role) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
 
-    if (role !== "ADMIN" && userId !== id) {
+    if (role !== Role.ADMIN && userId !== id) {
       return res.status(403).json({
         success: false,
         message: "Forbidden",
@@ -43,7 +47,7 @@ const getUser = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(404).json({
       success: false,
-      message: error.message || "User not found",
+      message: error.message,
     });
   }
 };
@@ -54,11 +58,14 @@ const updateUserController = async (req: Request, res: Response) => {
     const userId = Number(req.user?.id);
     const role = req.user?.role;
 
-    if (!userId || !role) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
 
-    if (role !== "ADMIN" && userId !== id) {
+    if (role !== Role.ADMIN && userId !== id) {
       return res.status(403).json({
         success: false,
         message: "Forbidden",
@@ -75,7 +82,7 @@ const updateUserController = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Update failed",
+      message: error.message,
     });
   }
 };
@@ -84,7 +91,7 @@ const deleteUserController = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
 
-    if (isNaN(id) || id <= 0) {
+    if (isNaN(id)) {
       return res.status(400).json({
         success: false,
         message: "Invalid user ID",
@@ -100,7 +107,7 @@ const deleteUserController = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Delete failed",
+      message: error.message,
     });
   }
 };
@@ -109,7 +116,7 @@ const restoreUserController = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
 
-    if (isNaN(id) || id <= 0) {
+    if (isNaN(id)) {
       return res.status(400).json({
         success: false,
         message: "Invalid user ID",
@@ -126,7 +133,7 @@ const restoreUserController = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Restore failed",
+      message: error.message,
     });
   }
 };

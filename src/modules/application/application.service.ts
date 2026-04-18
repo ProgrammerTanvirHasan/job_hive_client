@@ -49,7 +49,21 @@ const getApplications = async (userId: number) => {
   });
 };
 
-const getApplicationsByJob = async (jobId: number) => {
+const getApplicationsByJob = async (
+  jobId: number,
+  userId: number,
+  role: string,
+) => {
+  const job = await prisma.job.findUnique({
+    where: { id: jobId },
+  });
+
+  if (!job) throw new Error("Job not found");
+
+  if (role !== "ADMIN" && job.recruiterId !== userId) {
+    throw new Error("Not authorized");
+  }
+
   return prisma.application.findMany({
     where: { jobId },
     include: {

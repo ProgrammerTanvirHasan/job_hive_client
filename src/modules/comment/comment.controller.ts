@@ -4,23 +4,19 @@ import { commentService } from "./comment.service";
 
 const createComment = async (req: Request, res: Response) => {
   try {
-    if (!req.user) {
+    const userId = req.user?.id;
+
+    if (!userId) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized",
       });
     }
 
-    const userId = Number(req.user.id);
-
-    const parsed = commentSchema.parse({
-      jobId: Number(req.body.jobId),
-      content: req.body.content,
-      parentId: req.body.parentId ? Number(req.body.parentId) : undefined,
-    });
+    const parsed = commentSchema.parse(req.body);
 
     const comment = await commentService.createComment(
-      userId,
+      Number(userId),
       parsed.jobId,
       parsed.content,
       parsed.parentId,
@@ -34,7 +30,7 @@ const createComment = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.errors || error.message,
+      message: error.message || error.errors,
     });
   }
 };

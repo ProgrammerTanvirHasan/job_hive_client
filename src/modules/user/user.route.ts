@@ -6,7 +6,9 @@ import { Role } from "../../../generated/prisma";
 const router = express.Router();
 
 router.get("/", authMiddleware(Role.ADMIN), userController.getAllUsers);
+
 router.get("/:id", authMiddleware(), userController.getUser);
+
 router.put("/:id", authMiddleware(), userController.updateUserController);
 router.delete(
   "/:id",

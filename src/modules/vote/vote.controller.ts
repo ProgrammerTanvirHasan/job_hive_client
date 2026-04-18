@@ -42,6 +42,8 @@ const voteJob = async (req: Request, res: Response) => {
     });
   }
 };
+
+
 const getVoteCount = async (req: Request, res: Response) => {
   try {
     const jobId = Number(req.params.jobId);

@@ -20,7 +20,7 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const session = await auth.api.getSession({
-        headers: req.headers as HeadersInit,
+        headers: req.headers as any,
       });
 
       if (!session || !session.user) {
@@ -49,32 +49,32 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
           message: "User not found",
         });
       }
-
-      if (dbUser.status !== UserStatus.ACTIVE) {
+      if (dbUser.status === UserStatus.BANNED) {
         return res.status(403).json({
           success: false,
-          message:
-            dbUser.status === UserStatus.BANNED
-              ? "Account is banned"
-              : "Account is deactivated",
+          message: "Account is banned",
         });
       }
-      if (req.user?.role !== "ADMIN") {
-        return res.status(403).json({ message: "Forbidden" });
-      }
-      req.user = {
-        id: dbUser.id,
-        name: dbUser.name,
-        email: dbUser.email,
-        role: dbUser.role,
-      };
 
+      if (dbUser.status === UserStatus.INACTIVE) {
+        return res.status(403).json({
+          success: false,
+          message: "Account is deactivated",
+        });
+      }
       if (allowedRoles.length > 0 && !allowedRoles.includes(dbUser.role)) {
         return res.status(403).json({
           success: false,
           message: "Forbidden: insufficient permissions",
         });
       }
+
+      req.user = {
+        id: dbUser.id,
+        name: dbUser.name,
+        email: dbUser.email,
+        role: dbUser.role,
+      };
 
       next();
     } catch (error) {
