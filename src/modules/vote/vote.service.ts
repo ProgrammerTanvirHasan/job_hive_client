@@ -5,21 +5,33 @@ export const voteJob = async (
   jobId: number,
   type: "UP" | "DOWN",
 ) => {
-  try {
-    return await prisma.vote.upsert({
-      where: {
-        userId_jobId: { userId, jobId },
-      },
-      update: {
-        type,
-      },
-      create: {
-        userId,
-        jobId,
-        type,
-      },
-    });
-  } catch (error) {
-    throw new Error("Failed to vote job");
+  const job = await prisma.job.findUnique({
+    where: { id: jobId },
+  });
+
+  if (!job) {
+    throw new Error("Job not found");
   }
+
+  if (job.status !== "APPROVED") {
+    throw new Error("You can only vote approved jobs");
+  }
+
+  if (job.recruiterId === userId) {
+    throw new Error("You cannot vote your own job");
+  }
+
+  return prisma.vote.upsert({
+    where: {
+      userId_jobId: { userId, jobId },
+    },
+    update: {
+      type,
+    },
+    create: {
+      userId,
+      jobId,
+      type,
+    },
+  });
 };

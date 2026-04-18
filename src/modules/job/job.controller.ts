@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { jobService } from "./job.service";
 
-
 const createJob = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.user?.id);
@@ -40,7 +39,16 @@ const getAllJob = async (req: Request, res: Response) => {
 
 const getJobById = async (req: Request, res: Response) => {
   try {
-    const job = await jobService.getJobById(Number(req.params.id));
+    const id = Number(req.params.id);
+
+    if (isNaN(id) || id <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid job ID",
+      });
+    }
+
+    const job = await jobService.getJobById(id);
 
     if (!job) {
       return res.status(404).json({

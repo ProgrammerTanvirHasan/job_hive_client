@@ -38,7 +38,7 @@ status UserStatus @default(ACTIVE)
 
 
 
-//job done////////////////
+
 model Job {
   id          Int       @id @default(autoincrement())
 
@@ -74,7 +74,7 @@ model Job {
 
 }
 
-//aplicationdone/////////////////////////////////
+
 model Application {
   id          Int               @id @default(autoincrement())
   resume      String
@@ -129,7 +129,7 @@ model Vote {
 }
 
 
-//comment done////////////////////////////
+
 model Comment {
   id        Int      @id @default(autoincrement())
   content   String

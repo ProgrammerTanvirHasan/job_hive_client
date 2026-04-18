@@ -84,7 +84,7 @@ const deleteUserController = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
 
-    if (!id) {
+    if (isNaN(id) || id <= 0) {
       return res.status(400).json({
         success: false,
         message: "Invalid user ID",
@@ -109,7 +109,7 @@ const restoreUserController = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
 
-    if (!id) {
+    if (isNaN(id) || id <= 0) {
       return res.status(400).json({
         success: false,
         message: "Invalid user ID",

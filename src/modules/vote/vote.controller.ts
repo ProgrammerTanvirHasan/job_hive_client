@@ -12,9 +12,16 @@ export const voteJobController = async (req: Request, res: Response) => {
     }
 
     const userId = Number(req.user.id);
+    const jobId = Number(req.params.jobId);
 
+    if (isNaN(jobId) || jobId <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid job ID",
+      });
+    }
     const parsed = voteSchema.parse({
-      jobId: Number(req.params.jobId),
+      jobId,
       type: req.body.type,
     });
 
@@ -28,7 +35,9 @@ export const voteJobController = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.errors || error.message,
+      message: error?.errors
+        ? error.errors.map((e: any) => e.message)
+        : error.message,
     });
   }
 };
