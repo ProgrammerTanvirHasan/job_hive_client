@@ -59,7 +59,9 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
               : "Account is deactivated",
         });
       }
-
+      if (req.user?.role !== "ADMIN") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
       req.user = {
         id: dbUser.id,
         name: dbUser.name,

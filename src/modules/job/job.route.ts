@@ -11,7 +11,15 @@ router.post("/", authMiddleware(), jobController.createJob);
 router.put("/:id", authMiddleware(), jobController.updateJob);
 router.delete("/:id", authMiddleware(), jobController.deleteJob);
 
-router.put("/:id/approve", authMiddleware(), jobController.approveJob);
-router.put("/:id/reject", authMiddleware(), jobController.rejectJob);
+router.put(
+  "/admin/:id/approve",
+  authMiddleware("ADMIN"),
+  jobController.approveJob,
+);
+router.put(
+  "/admin/:id/reject",
+  authMiddleware("ADMIN"),
+  jobController.rejectJob,
+);
 
 export const jobRouter = router;

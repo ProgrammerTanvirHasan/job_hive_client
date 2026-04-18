@@ -1,10 +1,10 @@
 import { prisma } from "../../lib/prisma";
 
-const createJob = async (data: any, recruiterId: number) => {
+const createJob = async (data: any, userId: number) => {
   return prisma.job.create({
     data: {
       ...data,
-      recruiterId,
+      recruiterId: userId,
       status: "PENDING",
     },
   });
@@ -29,12 +29,17 @@ const getJobById = async (id: number) => {
   });
 };
 
-const updateJob = async (id: number, data: any, userId: number) => {
+const updateJob = async (
+  id: number,
+  data: any,
+  userId: number,
+  role: string,
+) => {
   const job = await prisma.job.findUnique({ where: { id } });
 
   if (!job) throw new Error("Job not found");
 
-  if (job.recruiterId !== userId) {
+  if (role !== "ADMIN" && job.recruiterId !== userId) {
     throw new Error("Not authorized");
   }
 
@@ -44,24 +49,42 @@ const updateJob = async (id: number, data: any, userId: number) => {
   });
 };
 
-const deleteJob = async (id: number, userId: number) => {
+const deleteJob = async (id: number, userId: number, role: string) => {
   const job = await prisma.job.findUnique({ where: { id } });
 
   if (!job) throw new Error("Job not found");
 
-  if (job.recruiterId !== userId) {
+  if (role !== "ADMIN" && job.recruiterId !== userId) {
     throw new Error("Not authorized");
   }
 
-  return prisma.job.delete({ where: { id } });
-};
-
-const approveJob = async (id: number) => {
-  return prisma.job.update({
+  return prisma.job.delete({
     where: { id },
-    data: { status: "APPROVED" },
   });
 };
+
+const approveJob = async (jobId: number) => {
+  return prisma.$transaction(async (tx) => {
+    const job = await tx.job.findUnique({
+      where: { id: jobId },
+    });
+
+    if (!job) throw new Error("Job not found");
+
+    const updatedJob = await tx.job.update({
+      where: { id: jobId },
+      data: { status: "APPROVED" },
+    });
+
+    await tx.user.update({
+      where: { id: job.recruiterId },
+      data: { role: "RECRUITER" },
+    });
+
+    return updatedJob;
+  });
+};
+
 const rejectJob = async (id: number, feedback: string) => {
   return prisma.job.update({
     where: { id },

@@ -30,7 +30,8 @@ status UserStatus @default(ACTIVE)
   comments          Comment[]
   sessions          Session[]
   accounts          Account[]
-  recruiterRequests RecruiterRequest[]
+  
+ 
 
   @@map("user")
 }
@@ -69,6 +70,8 @@ model Job {
   @@index([recruiterId])
   @@index([status])
   @@index([category])
+ 
+
 }
 
 //aplicationdone/////////////////////////////////
@@ -208,25 +211,12 @@ model Verification {
 }
 
 
-
-model RecruiterRequest {
-  id          Int      @id @default(autoincrement())
-  company     String
-  experience  String
-  portfolio   String?
-  linkedin    String?
-  status      String   @default("PENDING")
-
-  createdAt   DateTime @default(now())
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
 /* ================= ENUMS ================= */
-
+enum JobStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
 enum Role {
   ADMIN
   RECRUITER
@@ -239,11 +229,6 @@ enum UserStatus {
 }
 
 
-enum JobStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
 
 enum ApplicationStatus {
   PENDING
