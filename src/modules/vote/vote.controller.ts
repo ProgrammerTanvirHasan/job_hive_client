@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
-import * as voteService from "./vote.service";
-import { voteSchema } from "./validation";
 
-export const voteJobController = async (req: Request, res: Response) => {
+import { voteSchema } from "./validation";
+import { voteService } from "./vote.service";
+
+const voteJob = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({
@@ -40,4 +41,33 @@ export const voteJobController = async (req: Request, res: Response) => {
         : error.message,
     });
   }
+};
+const getVoteCount = async (req: Request, res: Response) => {
+  try {
+    const jobId = Number(req.params.jobId);
+
+    if (isNaN(jobId) || jobId <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid job ID",
+      });
+    }
+
+    const result = await voteService.getVoteCount(jobId);
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const voteController = {
+  voteJob,
+  getVoteCount,
 };

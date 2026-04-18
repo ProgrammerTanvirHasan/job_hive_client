@@ -1,10 +1,6 @@
 import { prisma } from "../../lib/prisma";
 
-export const voteJob = async (
-  userId: number,
-  jobId: number,
-  type: "UP" | "DOWN",
-) => {
+const voteJob = async (userId: number, jobId: number, type: "UP" | "DOWN") => {
   const job = await prisma.job.findUnique({
     where: { id: jobId },
   });
@@ -34,4 +30,31 @@ export const voteJob = async (
       type,
     },
   });
+};
+
+const getVoteCount = async (jobId: number) => {
+  const upVotes = await prisma.vote.count({
+    where: {
+      jobId,
+      type: "UP",
+    },
+  });
+
+  const downVotes = await prisma.vote.count({
+    where: {
+      jobId,
+      type: "DOWN",
+    },
+  });
+
+  return {
+    upVotes,
+    downVotes,
+    total: upVotes - downVotes,
+  };
+};
+
+export const voteService = {
+  voteJob,
+  getVoteCount,
 };
