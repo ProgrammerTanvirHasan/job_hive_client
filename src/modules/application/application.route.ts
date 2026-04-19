@@ -6,7 +6,7 @@ import { Role } from "../../../generated/prisma";
 const router = express.Router();
 router.post("/", authMiddleware(Role.USER), applicationController.applyJob);
 router.get(
-  "/my",
+  "/",
   authMiddleware(Role.USER),
   applicationController.getApplications,
 );

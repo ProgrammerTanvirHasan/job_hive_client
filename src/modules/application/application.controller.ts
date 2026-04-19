@@ -6,7 +6,7 @@ const applyJob = async (req: Request, res: Response) => {
   try {
     const parsedData = applicationSchema.parse(req.body);
 
-    const userId = Number(req.user?.id);
+    const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -34,7 +34,10 @@ const applyJob = async (req: Request, res: Response) => {
 
 const getApplications = async (req: Request, res: Response) => {
   try {
-    const userId = Number(req.user?.id);
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
     const apps = await applicationService.getApplications(userId);
 
@@ -52,10 +55,9 @@ const getApplications = async (req: Request, res: Response) => {
 
 const getApplicationsByJob = async (req: Request, res: Response) => {
   try {
-    const userId = Number(req.user?.id);
-    const role = req.user?.role;
-
+    const userId = req.user?.id;
     const jobId = Number(req.params.jobId);
+    const role = req.user?.role;
 
     if (!userId || !role) {
       return res.status(401).json({
@@ -64,8 +66,8 @@ const getApplicationsByJob = async (req: Request, res: Response) => {
     }
 
     const data = await applicationService.getApplicationsByJob(
-      jobId,
       userId,
+      jobId,
       role,
     );
 

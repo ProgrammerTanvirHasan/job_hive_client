@@ -7,7 +7,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: {
-        id: number;
+        id: string;
         name?: string | null;
         email: string;
         role: Role;
@@ -30,9 +30,9 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
         });
       }
 
-      const userId = Number(session.user.id);
+      const userId = session.user.id;
 
-      if (isNaN(userId)) {
+      if (!userId) {
         return res.status(400).json({
           success: false,
           message: "Invalid user ID",
@@ -41,6 +41,13 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
 
       const dbUser = await prisma.user.findUnique({
         where: { id: userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          status: true,
+        },
       });
 
       if (!dbUser) {
@@ -49,6 +56,7 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
           message: "User not found",
         });
       }
+
       if (dbUser.status === UserStatus.BANNED) {
         return res.status(403).json({
           success: false,
@@ -62,7 +70,8 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
           message: "Account is deactivated",
         });
       }
-      if (allowedRoles.length > 0 && !allowedRoles.includes(dbUser.role)) {
+
+      if (allowedRoles.length && !allowedRoles.includes(dbUser.role)) {
         return res.status(403).json({
           success: false,
           message: "Forbidden: insufficient permissions",

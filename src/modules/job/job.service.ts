@@ -1,11 +1,11 @@
 import { JobStatus, Role } from "../../../generated/prisma";
 import { prisma } from "../../lib/prisma";
 
-const createJob = async (data: any, userId: number) => {
+const createJob = async (data: any, userId: string) => {
   return prisma.job.create({
     data: {
       ...data,
-      recruiterId: userId,
+      userId,
       status: JobStatus.PENDING,
     },
   });
@@ -15,7 +15,7 @@ const getAllJobs = async () => {
   return prisma.job.findMany({
     where: { status: JobStatus.APPROVED },
     include: {
-      recruiter: true,
+      user: true,
     },
   });
 };
@@ -24,7 +24,7 @@ const getJobById = async (id: number) => {
   return prisma.job.findUnique({
     where: { id },
     include: {
-      recruiter: true,
+      user: true,
       applications: true,
     },
   });
@@ -33,14 +33,14 @@ const getJobById = async (id: number) => {
 const updateJob = async (
   id: number,
   data: any,
-  userId: number,
+  userId: string,
   role: string,
 ) => {
   const job = await prisma.job.findUnique({ where: { id } });
 
   if (!job) throw new Error("Job not found");
 
-  if (role !== Role.ADMIN && job.recruiterId !== userId) {
+  if (role !== Role.ADMIN && job.userId !== userId) {
     throw new Error("Not authorized");
   }
 
@@ -50,12 +50,12 @@ const updateJob = async (
   });
 };
 
-const deleteJob = async (id: number, userId: number, role: string) => {
+const deleteJob = async (id: number, userId: string, role: string) => {
   const job = await prisma.job.findUnique({ where: { id } });
 
   if (!job) throw new Error("Job not found");
 
-  if (role !== Role.ADMIN && job.recruiterId !== userId) {
+  if (role !== Role.ADMIN && job.userId !== userId) {
     throw new Error("Not authorized");
   }
 
@@ -79,7 +79,7 @@ const approveJob = async (jobId: number) => {
 
     await tx.user.updateMany({
       where: {
-        id: job.recruiterId,
+        id: job.userId,
         role: Role.USER,
       },
       data: {

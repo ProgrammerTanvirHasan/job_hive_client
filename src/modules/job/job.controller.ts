@@ -3,7 +3,7 @@ import { jobService } from "./job.service";
 
 const createJob = async (req: Request, res: Response) => {
   try {
-    const userId = Number(req.user?.id);
+    const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -71,7 +71,7 @@ const getJobById = async (req: Request, res: Response) => {
 
 const updateJob = async (req: Request, res: Response) => {
   try {
-    const userId = Number(req.user?.id);
+    const userId = req.user?.id;
     const role = req.user?.role;
 
     if (!userId || !role) {
@@ -95,7 +95,7 @@ const updateJob = async (req: Request, res: Response) => {
 };
 const deleteJob = async (req: Request, res: Response) => {
   try {
-    const userId = Number(req.user?.id);
+    const userId = (req.user?.id);
     const role = req.user?.role;
 
     if (!userId || !role) {
