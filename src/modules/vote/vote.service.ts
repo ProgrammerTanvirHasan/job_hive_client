@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma";
 
-const voteJob = async (userId: number, jobId: number, type: "UP" | "DOWN") => {
+const voteJob = async (userId: string, jobId: number, type: "UP" | "DOWN") => {
   const job = await prisma.job.findUnique({
     where: { id: jobId },
     select: {

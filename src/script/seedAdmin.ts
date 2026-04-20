@@ -1,6 +1,7 @@
 import { randomBytes } from "crypto";
 import { scryptAsync } from "@noble/hashes/scrypt.js";
 import { prisma } from "../lib/prisma";
+import { Role } from "../../generated/prisma";
 
 const SCRYPT_CONFIG = {
   N: 16384,
@@ -44,7 +45,7 @@ async function seedAdmin() {
         name: "Tanvir",
         email: adminEmail,
         password: hashedPassword,
-        role: "ADMIN",
+        role: Role.ADMIN,
       },
     });
 

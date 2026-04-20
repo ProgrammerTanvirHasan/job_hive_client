@@ -12,7 +12,7 @@ const voteJob = async (req: Request, res: Response) => {
       });
     }
 
-    const userId = Number(req.user.id);
+    const userId = req.user.id;
     const jobId = Number(req.params.jobId);
 
     if (isNaN(jobId) || jobId <= 0) {
@@ -42,7 +42,6 @@ const voteJob = async (req: Request, res: Response) => {
     });
   }
 };
-
 
 const getVoteCount = async (req: Request, res: Response) => {
   try {

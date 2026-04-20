@@ -16,7 +16,7 @@ const createComment = async (req: Request, res: Response) => {
     const parsed = commentSchema.parse(req.body);
 
     const comment = await commentService.createComment(
-      Number(userId),
+      userId,
       parsed.jobId,
       parsed.content,
       parsed.parentId,

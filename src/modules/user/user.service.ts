@@ -9,7 +9,7 @@ const getAllUsers = async () => {
   });
 };
 
-const getUserById = async (id: number) => {
+const getUserById = async (id: string) => {
   const user = await prisma.user.findUnique({
     where: { id },
   });
@@ -26,7 +26,7 @@ const getUserById = async (id: number) => {
 };
 
 const updateUser = async (
-  id: number,
+  id: string,
   data: {
     name?: string;
     image?: string;
@@ -53,7 +53,7 @@ const updateUser = async (
   });
 };
 
-const deleteUser = async (id: number) => {
+const deleteUser = async (id: string) => {
   const existingUser = await prisma.user.findUnique({
     where: { id },
   });
@@ -74,7 +74,7 @@ const deleteUser = async (id: number) => {
   });
 };
 
-const restoreUser = async (id: number) => {
+const restoreUser = async (id: string) => {
   const existingUser = await prisma.user.findUnique({
     where: { id },
   });

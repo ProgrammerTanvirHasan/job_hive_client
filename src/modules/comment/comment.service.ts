@@ -1,7 +1,7 @@
 import { prisma } from "../../lib/prisma";
 
 const createComment = async (
-  userId: number,
+  userId: string,
   jobId: number,
   content: string,
   parentId?: number,

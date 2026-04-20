@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { auth } from "../lib/auth";
 import { prisma } from "../lib/prisma";
 import { Role, UserStatus } from "../../generated/prisma";
+import { validate as isUUID } from "uuid";
 
 declare global {
   namespace Express {
@@ -30,12 +31,12 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
         });
       }
 
-      const userId = session.user.id;
+      const userId = String(session.user.id);
 
-      if (!userId) {
+      if (!isUUID(userId)) {
         return res.status(400).json({
           success: false,
-          message: "Invalid user ID",
+          message: "Invalid user ID format",
         });
       }
 
