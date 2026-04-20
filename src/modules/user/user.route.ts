@@ -10,15 +10,15 @@ router.get("/", authMiddleware(Role.ADMIN), userController.getAllUsers);
 router.get("/:id", authMiddleware(), userController.getUser);
 
 router.put("/:id", authMiddleware(), userController.updateUserController);
-router.delete(
-  "/:id",
-  authMiddleware(Role.ADMIN),
-  userController.deleteUserController,
-);
+// router.delete(
+//   "/:id",
+//   authMiddleware(Role.ADMIN),
+//   userController.deleteUserController,
+// );
 router.patch(
-  "/restore/:id",
+  "/status/:id",
   authMiddleware(Role.ADMIN),
-  userController.restoreUserController,
+  userController.updateUserStatus,
 );
 
 export const userRouter = router;

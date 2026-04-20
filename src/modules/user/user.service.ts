@@ -3,6 +3,11 @@ import { prisma } from "../../lib/prisma";
 
 const getAllUsers = async () => {
   return prisma.user.findMany({
+    where: {
+      role: {
+        not: "ADMIN",
+      },
+    },
     orderBy: {
       createdAt: "desc",
     },
@@ -53,48 +58,64 @@ const updateUser = async (
   });
 };
 
-const deleteUser = async (id: string) => {
-  const existingUser = await prisma.user.findUnique({
-    where: { id },
-  });
-
-  if (!existingUser) {
-    throw new Error("User not found");
-  }
-
-  if (existingUser.status === UserStatus.INACTIVE) {
-    throw new Error("User already deactivated");
-  }
-
+const updateUserStatus = async (
+  userId: string,
+  status: "ACTIVE" | "BANNED",
+) => {
   return prisma.user.update({
-    where: { id },
-    data: {
-      status: UserStatus.INACTIVE,
+    where: { id: userId },
+    data: { status },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
     },
   });
 };
 
-const restoreUser = async (id: string) => {
-  const existingUser = await prisma.user.findUnique({
-    where: { id },
-  });
+// const deleteUser = async (id: string) => {
+//   const existingUser = await prisma.user.findUnique({
+//     where: { id },
+//   });
 
-  if (!existingUser) {
-    throw new Error("User not found");
-  }
+//   if (!existingUser) {
+//     throw new Error("User not found");
+//   }
 
-  return prisma.user.update({
-    where: { id },
-    data: {
-      status: UserStatus.ACTIVE,
-    },
-  });
-};
+//   if (existingUser.status === UserStatus.INACTIVE) {
+//     throw new Error("User already deactivated");
+//   }
+
+//   return prisma.user.update({
+//     where: { id },
+//     data: {
+//       status: UserStatus.INACTIVE,
+//     },
+//   });
+// };
+
+// const restoreUser = async (id: string) => {
+//   const user = await prisma.user.findUnique({ where: { id } });
+
+//   if (!user) throw new Error("User not found");
+
+//   if (user.status === UserStatus.ACTIVE) {
+//     throw new Error("User already active");
+//   }
+
+//   return prisma.user.update({
+//     where: { id },
+//     data: { status: UserStatus.ACTIVE },
+//   });
+// };
 
 export const userService = {
   getAllUsers,
   getUserById,
   updateUser,
-  deleteUser,
-  restoreUser,
+  updateUserStatus,
 };

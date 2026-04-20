@@ -24,7 +24,7 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
         headers: req.headers as any,
       });
 
-      if (!session || !session.user) {
+      if (!session?.user?.id) {
         return res.status(401).json({
           success: false,
           message: "Unauthorized",
@@ -33,10 +33,10 @@ export const authMiddleware = (...allowedRoles: Role[]) => {
 
       const userId = String(session.user.id);
 
-      if (!isUUID(userId)) {
-        return res.status(400).json({
+      if (!userId) {
+        return res.status(401).json({
           success: false,
-          message: "Invalid user ID format",
+          message: "Unauthorized",
         });
       }
 

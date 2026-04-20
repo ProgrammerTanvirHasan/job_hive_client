@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { userService } from "./user.service";
 import { Role } from "../../../generated/prisma";
 
@@ -15,6 +15,26 @@ const getAllUsers = async (req: Request, res: Response) => {
       success: false,
       message: error.message || "Server Error",
     });
+  }
+};
+const updateUserStatus = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    if (!["ACTIVE", "BANNED"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "status must be ACTIVE or BANNED",
+      });
+    }
+    const result = await userService.updateUserStatus(id as string, status);
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -87,61 +107,60 @@ const updateUserController = async (req: Request, res: Response) => {
   }
 };
 
-const deleteUserController = async (req: Request, res: Response) => {
-  try {
-    const id = String(req.params.id);
+// const deleteUserController = async (req: Request, res: Response) => {
+//   try {
+//     const id = String(req.params.id);
 
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid user ID",
-      });
-    }
+//     if (!id) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid user ID",
+//       });
+//     }
 
-    await userService.deleteUser(id);
+//     await userService.deleteUser(id);
 
-    return res.status(200).json({
-      success: true,
-      message: "User deactivated successfully",
-    });
-  } catch (error: any) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+//     return res.status(200).json({
+//       success: true,
+//       message: "User deactivated successfully",
+//     });
+//   } catch (error: any) {
+//     return res.status(400).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 
-const restoreUserController = async (req: Request, res: Response) => {
-  try {
-    const id = String(req.params.id);
+// const restoreUserController = async (req: Request, res: Response) => {
+//   try {
+//     const id = String(req.params.id);
 
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid user ID",
-      });
-    }
+//     if (!id) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid user ID",
+//       });
+//     }
 
-    const user = await userService.restoreUser(id);
+//     const user = await userService.restoreUser(id);
 
-    return res.status(200).json({
-      success: true,
-      message: "User restored successfully",
-      data: user,
-    });
-  } catch (error: any) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+//     return res.status(200).json({
+//       success: true,
+//       message: "User restored successfully",
+//       data: user,
+//     });
+//   } catch (error: any) {
+//     return res.status(400).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 
 export const userController = {
   getAllUsers,
   getUser,
   updateUserController,
-  deleteUserController,
-  restoreUserController,
+  updateUserStatus,
 };
