@@ -6,21 +6,28 @@ const createJob = async (req: Request, res: Response) => {
     const userId = req.user?.id;
 
     if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
 
     const job = await jobService.createJob(req.body, userId);
 
     res.status(201).json({
       success: true,
-      message: "Job created (pending approval)",
+      message: "Job created successfully",
       data: job,
     });
   } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("CREATE JOB ERROR:", err);
+
+    res.status(500).json({
+      success: false,
+      message: err.message || "Something went wrong",
+    });
   }
 };
-
 const getAllJob = async (req: Request, res: Response) => {
   try {
     const jobs = await jobService.getAllJobs();
@@ -33,6 +40,37 @@ const getAllJob = async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+const getJobsByCategoryPreview = async (req: Request, res: Response) => {
+  try {
+    const jobs = await jobService.getJobsByCategoryPreview();
+
+    return res.status(200).json({
+      success: true,
+      data: jobs,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+const getPremiumJobs = async (req: Request, res: Response) => {
+  try {
+    const jobs = await jobService.getPremiumJobs();
+
+    res.json({
+      success: true,
+      data: jobs,
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
     });
   }
 };
@@ -95,7 +133,7 @@ const updateJob = async (req: Request, res: Response) => {
 };
 const deleteJob = async (req: Request, res: Response) => {
   try {
-    const userId = (req.user?.id);
+    const userId = req.user?.id;
     const role = req.user?.role;
 
     if (!userId || !role) {
@@ -140,20 +178,18 @@ const approveJob = async (req: Request, res: Response) => {
 
 const rejectJob = async (req: Request, res: Response) => {
   try {
-    const { feedback } = req.body;
+    const id = Number(req.params.id);
+    const { rejectionReason } = req.body;
 
-    const job = await jobService.rejectJob(Number(req.params.id), feedback);
+    const job = await jobService.rejectJob(id, rejectionReason);
 
-    return res.status(200).json({
+    return res.json({
       success: true,
       message: "Job rejected",
       data: job,
     });
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+  } catch (err: any) {
+    return res.status(500).json({ message: err.message });
   }
 };
 
@@ -165,4 +201,6 @@ export const jobController = {
   deleteJob,
   approveJob,
   rejectJob,
+  getPremiumJobs,
+  getJobsByCategoryPreview,
 };

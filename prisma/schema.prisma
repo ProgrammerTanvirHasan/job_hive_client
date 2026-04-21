@@ -53,12 +53,15 @@ model Job {
   price       Float?
 
   status      JobStatus @default(PENDING)
+  requirements   String[]  
+  qualifications String[]  
+  benefits       String[] 
 
   rejectionReason String?
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
+   applyDeadline DateTime?
 userId String
   user   User @relation(fields: [userId], references: [id], onDelete: Restrict)
 

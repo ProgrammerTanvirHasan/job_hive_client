@@ -2,20 +2,81 @@ import { JobStatus, Role } from "../../../generated/prisma";
 import { prisma } from "../../lib/prisma";
 
 const createJob = async (data: any, userId: string) => {
+  // ✅ Safe Date Conversion
+  let applyDeadline = null;
+
+  if (data.applyDeadline) {
+    const parsedDate = new Date(data.applyDeadline);
+
+    if (!isNaN(parsedDate.getTime())) {
+      applyDeadline = parsedDate;
+    } else {
+      throw new Error("Invalid apply deadline format");
+    }
+  }
+
   return prisma.job.create({
     data: {
-      ...data,
+      title: data.title,
+      description: data.description,
+      company: data.company,
+      location: data.location,
+      category: data.category,
+
+      salary: data.salary || null,
+
+      isPaid: data.isPaid,
+      price: data.price ?? null,
+
+      requirements: data.requirements || [],
+      qualifications: data.qualifications || [],
+      benefits: data.benefits || [],
+
+      applyDeadline,
+
       userId,
-      status: JobStatus.PENDING,
+      status: "PENDING",
+    },
+  });
+};
+const getAllJobs = async () => {
+  return prisma.job.findMany({
+    include: {
+      user: true,
     },
   });
 };
 
-const getAllJobs = async () => {
+const getJobsByCategoryPreview = async () => {
+  const jobs = await prisma.job.findMany({
+    where: {
+      status: "APPROVED",
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const map = new Map<string, any>();
+
+  for (const job of jobs) {
+    if (!map.has(job.category)) {
+      map.set(job.category, job);
+    }
+  }
+
+  return Array.from(map.values());
+};
+const getPremiumJobs = async () => {
   return prisma.job.findMany({
-    where: { status: JobStatus.APPROVED },
-    include: {
-      user: true,
+    where: {
+      status: JobStatus.APPROVED,
+      price: {
+        gt: 0,
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
     },
   });
 };
@@ -109,4 +170,6 @@ export const jobService = {
   getAllJobs,
   getJobById,
   createJob,
+  getPremiumJobs,
+  getJobsByCategoryPreview,
 };

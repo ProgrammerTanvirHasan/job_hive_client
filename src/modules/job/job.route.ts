@@ -2,6 +2,8 @@ import express from "express";
 import { jobController } from "./job.controller";
 import { authMiddleware } from "../../middleware/authMiddleware";
 import { Role } from "../../../generated/prisma";
+import { createJobSchema } from "./validation";
+import { validate } from "../../middleware/validate";
 
 const router = express.Router();
 
@@ -10,9 +12,13 @@ router.get("/:id", jobController.getJobById);
 
 router.post(
   "/",
-  authMiddleware(Role.USER, Role.RECRUITER),
+  validate(createJobSchema),
+  authMiddleware(Role.USER, Role.RECRUITER, Role.ADMIN),
+
   jobController.createJob,
 );
+router.get("/jobs/premium", jobController.getPremiumJobs);
+router.get("/jobs/categories-preview", jobController.getJobsByCategoryPreview);
 
 router.patch(
   "/:id",
