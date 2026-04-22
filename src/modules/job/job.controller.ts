@@ -44,6 +44,58 @@ const getAllJob = async (req: Request, res: Response) => {
   }
 };
 
+const getActiveJobs = async (req: Request, res: Response) => {
+  try {
+    const jobs = await jobService.getActiveJobs();
+
+    return res.status(200).json({
+      success: true,
+      data: jobs,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+const getPendingJobs = async (req: Request, res: Response) => {
+  try {
+    const jobs = await jobService.getPendingJobs();
+
+    return res.status(200).json({
+      success: true,
+      data: jobs,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const getUrgentJobs = async (req: Request, res: Response) => {
+  try {
+    const jobs = await jobService.getUrgentJobs();
+
+    return res.status(200).json({
+      success: true,
+      count: jobs.length,
+      message: "Urgent jobs fetched successfully",
+      data: jobs,
+    });
+  } catch (error: any) {
+    console.error("Get Urgent Jobs Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch urgent jobs",
+      error: error.message,
+    });
+  }
+};
+
 const getJobsByCategoryPreview = async (req: Request, res: Response) => {
   try {
     const jobs = await jobService.getJobsByCategoryPreview();
@@ -203,4 +255,7 @@ export const jobController = {
   rejectJob,
   getPremiumJobs,
   getJobsByCategoryPreview,
+  getActiveJobs,
+  getUrgentJobs,
+  getPendingJobs,
 };

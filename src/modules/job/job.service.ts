@@ -46,6 +46,26 @@ const getAllJobs = async () => {
     },
   });
 };
+const getActiveJobs = async () => {
+  return prisma.job.findMany({
+    where: {
+      status: "APPROVED",
+    },
+    include: {
+      user: true,
+    },
+  });
+};
+const getPendingJobs = async () => {
+  return prisma.job.findMany({
+    where: {
+      status: "PENDING",
+    },
+    include: {
+      user: true,
+    },
+  });
+};
 
 const getJobsByCategoryPreview = async () => {
   const jobs = await prisma.job.findMany({
@@ -78,6 +98,28 @@ const getPremiumJobs = async () => {
     orderBy: {
       createdAt: "desc",
     },
+  });
+};
+
+const getUrgentJobs = async () => {
+  const now = new Date();
+  const next72Hours = new Date(Date.now() + 72 * 60 * 60 * 1000);
+
+  return prisma.job.findMany({
+    where: {
+      status: "APPROVED",
+      applyDeadline: {
+        gte: now,
+        lte: next72Hours,
+      },
+    },
+    include: {
+      user: true,
+    },
+    orderBy: {
+      applyDeadline: "desc",
+    },
+    take: 10,
   });
 };
 
@@ -172,4 +214,7 @@ export const jobService = {
   createJob,
   getPremiumJobs,
   getJobsByCategoryPreview,
+  getActiveJobs,
+  getUrgentJobs,
+  getPendingJobs,
 };

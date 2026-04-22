@@ -18,7 +18,10 @@ router.post(
   jobController.createJob,
 );
 router.get("/jobs/premium", jobController.getPremiumJobs);
+router.get("/jobs/all", jobController.getActiveJobs);
+router.get("/jobs/pending", jobController.getPendingJobs);
 router.get("/jobs/categories-preview", jobController.getJobsByCategoryPreview);
+router.get("/jobs/urgent-jobs", jobController.getUrgentJobs);
 
 router.patch(
   "/:id",
@@ -30,7 +33,7 @@ router.delete(
   "/:id",
   authMiddleware(Role.RECRUITER, Role.ADMIN),
   jobController.deleteJob,
-);
+);``
 
 router.put(
   "/admin/:id/approve",

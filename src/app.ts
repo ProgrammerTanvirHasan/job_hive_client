@@ -14,6 +14,7 @@ import { notFound } from "./middleware/notFound";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 import errorHandler from "./middleware/globalErrorHandler";
+import { adminRouter } from "./modules/admin/admin.route";
 
 const app: Application = express();
 
@@ -37,6 +38,7 @@ app.use("/api/job", jobRouter);
 app.use("/api/payment", paymentRouter);
 app.use("/api/user", userRouter);
 app.use("/api/vote", voteRouter);
+app.use("/api/admin", adminRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, TypeScript + Express!!");
