@@ -10,6 +10,14 @@ router.get(
   authMiddleware(Role.USER),
   applicationController.getApplications,
 );
+///////////////
+
+router.get(
+  "/not-applied",
+  authMiddleware(Role.USER),
+  applicationController.getNotAppliedJobs,
+);
+/////////////////////////////
 router.get(
   "/job/:jobId",
   authMiddleware(Role.RECRUITER, Role.ADMIN),

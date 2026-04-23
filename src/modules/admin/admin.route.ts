@@ -8,9 +8,11 @@ router.get(
   authMiddleware(Role.ADMIN),
   adminController.getDashboardStats,
 );
+/////////////////////
 router.delete(
   "/company/:company",
   authMiddleware(Role.ADMIN),
   adminController.deleteCompanyJobs,
 );
+/////////////////
 export const adminRouter = router;

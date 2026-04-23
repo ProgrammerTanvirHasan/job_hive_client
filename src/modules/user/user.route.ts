@@ -8,8 +8,8 @@ const router = express.Router();
 router.get("/", authMiddleware(Role.ADMIN), userController.getAllUsers);
 
 router.get("/:id", authMiddleware(), userController.getUser);
+router.put("/me", authMiddleware(), userController.updateUser);
 
-router.put("/:id", authMiddleware(), userController.updateUserController);
 // router.delete(
 //   "/:id",
 //   authMiddleware(Role.ADMIN),

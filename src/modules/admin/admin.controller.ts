@@ -16,6 +16,7 @@ const getDashboardStats = async (req: Request, res: Response) => {
     });
   }
 };
+///////////////////////
 
 const deleteCompanyJobs = async (req: Request, res: Response) => {
   try {

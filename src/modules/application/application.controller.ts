@@ -52,6 +52,31 @@ const getApplications = async (req: Request, res: Response) => {
     });
   }
 };
+////////////////////////////
+const getNotAppliedJobs = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const jobs = await applicationService.getNotAppliedJobs(userId);
+
+    return res.status(200).json({
+      success: true,
+      data: jobs,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 const getApplicationsByJob = async (req: Request, res: Response) => {
   try {
@@ -87,4 +112,5 @@ export const applicationController = {
   applyJob,
   getApplications,
   getApplicationsByJob,
+  getNotAppliedJobs,
 };

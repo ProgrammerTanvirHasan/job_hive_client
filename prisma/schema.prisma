@@ -7,62 +7,64 @@ datasource db {
   provider = "postgresql"
 }
 
+/* ================= USER ================= */
 
 model User {
-   id    String @id @default(uuid())
-  name          String?
-  email         String   @unique
- 
-  role          Role     @default(USER)
-status UserStatus @default(ACTIVE)
+  id    String @id @default(uuid())
+
+  name  String?
+  email String @unique
+
+  role   Role @default(USER)
+  status UserStatus @default(ACTIVE)
+
   image         String?
+  emailVerified Boolean @default(false)
 
-  emailVerified Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-
-  jobs              Job[]
-  applications      Application[]
-  payments          Payment[]
-  votes             Vote[]
-  comments          Comment[]
-  sessions          Session[]
-  accounts          Account[]
-  
- 
+  jobs         Job[]
+  applications Application[]
+  payments     Payment[]
+  votes        Vote[]
+  comments     Comment[]
+  sessions     Session[]
+  accounts     Account[]
 
   @@map("user")
 }
 
 
-
-
 model Job {
-  id          Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   title       String
   description String
   company     String
   location    String
-  salary      String?
-  category    String
+  salary Int?
 
-  isPaid      Boolean   @default(false)
-  price       Float?
 
-  status      JobStatus @default(PENDING)
-  requirements   String[]  
-  qualifications String[]  
-  benefits       String[] 
+  category String
+  
+
+  isPaid Boolean @default(false)
+  price  Float?
+
+  status JobStatus @default(PENDING)
+
+  requirements   String[]
+  qualifications String[]
+  benefits       String[]
 
   rejectionReason String?
+  applyDeadline   DateTime?
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-   applyDeadline DateTime?
-userId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
   user   User @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   applications Application[]
@@ -73,19 +75,19 @@ userId String
   @@index([userId])
   @@index([status])
   @@index([category])
- 
-
 }
 
+/* ================= APPLICATION ================= */
 
 model Application {
-  id          Int               @id @default(autoincrement())
+  id Int @id @default(autoincrement())
+
   resume      String
   coverLetter String?
   status      ApplicationStatus @default(PENDING)
 
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   userId String
   jobId  Int
@@ -93,44 +95,34 @@ model Application {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, jobId])  
-  @@index([userId])           
-  @@index([jobId])         
+  @@unique([userId, jobId])
+  @@index([userId])
+  @@index([jobId])
 }
 
-
-
+/* ================= PAYMENT ================= */
 
 model Payment {
-  id            Int           @id @default(autoincrement())
-  
-  transactionId String        @unique
-  
-  amount        Decimal       @db.Decimal(10,2)
-  
-  currency      String        @default("BDT")
-  
-  status        PaymentStatus @default(PENDING)
-  
+  id            Int     @id @default(autoincrement())
+  transactionId String  @unique
 
-  userId        String
-  
-  jobId         Int
+  amount   Decimal @db.Decimal(10, 2)
+  currency String  @default("BDT")
 
-  gateway       String        @default("SSLCommerz")
-  
+  status PaymentStatus @default(PENDING)
+
+  userId String
+  jobId  Int
+
+  gateway       String @default("SSLCommerz")
   paymentMethod PaymentMethod?
 
-  valId         String?      
-  isVerified    Boolean       @default(false)
-
+  valId           String?
+  isVerified      Boolean @default(false)
   gatewayResponse Json?
-  
 
-  createdAt     DateTime      @default(now())
-  
-  updatedAt     DateTime      @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
@@ -139,11 +131,10 @@ model Payment {
   @@index([jobId])
 }
 
-
-
+/* ================= VOTE ================= */
 
 model Vote {
-  id   Int      @id @default(autoincrement())
+  id   Int @id @default(autoincrement())
   type VoteType
 
   userId String
@@ -156,16 +147,17 @@ model Vote {
   @@index([jobId])
 }
 
-
+/* ================= COMMENT ================= */
 
 model Comment {
-  id        Int      @id @default(autoincrement())
-  content   String
+  id      Int    @id @default(autoincrement())
+  content String
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userId String
-  jobId  Int
+  userId   String
+  jobId    Int
   parentId Int?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -179,7 +171,7 @@ model Comment {
   @@index([parentId])
 }
 
-
+/* ================= SESSION ================= */
 
 model Session {
   id        String   @id @default(cuid())
@@ -199,6 +191,7 @@ model Session {
   @@map("session")
 }
 
+/* ================= ACCOUNT ================= */
 
 model Account {
   id         String @id @default(cuid())
@@ -223,7 +216,7 @@ model Account {
   @@map("account")
 }
 
-
+/* ================= VERIFICATION ================= */
 
 model Verification {
   id         String   @id @default(cuid())
@@ -238,7 +231,6 @@ model Verification {
   @@map("verification")
 }
 
-
 /* ================= ENUMS ================= */
 
 enum PaymentMethod {
@@ -248,24 +240,23 @@ enum PaymentMethod {
   CARD
 }
 
-
 enum JobStatus {
   PENDING
   APPROVED
   REJECTED
 }
+
 enum Role {
   ADMIN
   RECRUITER
   USER
 }
+
 enum UserStatus {
   ACTIVE
   BANNED
   INACTIVE
 }
-
-
 
 enum ApplicationStatus {
   PENDING

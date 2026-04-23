@@ -14,21 +14,20 @@ const createJob = async (req: Request, res: Response) => {
 
     const job = await jobService.createJob(req.body, userId);
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Job created successfully",
       data: job,
     });
   } catch (err: any) {
-    console.error("CREATE JOB ERROR:", err);
-
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: err.message || "Something went wrong",
+      message: err.message,
     });
   }
 };
-const getAllJob = async (req: Request, res: Response) => {
+
+const getAllJobs = async (_req: Request, res: Response) => {
   try {
     const jobs = await jobService.getAllJobs();
 
@@ -36,15 +35,41 @@ const getAllJob = async (req: Request, res: Response) => {
       success: true,
       data: jobs,
     });
-  } catch (error: any) {
+  } catch (err: any) {
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: err.message,
     });
   }
 };
 
-const getActiveJobs = async (req: Request, res: Response) => {
+const getMyJobs = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const jobs = await jobService.getMyJobs(userId);
+
+    return res.status(200).json({
+      success: true,
+      count: jobs.length,
+      data: jobs,
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+const getActiveJobs = async (_req: Request, res: Response) => {
   try {
     const jobs = await jobService.getActiveJobs();
 
@@ -52,14 +77,15 @@ const getActiveJobs = async (req: Request, res: Response) => {
       success: true,
       data: jobs,
     });
-  } catch (error: any) {
+  } catch (err: any) {
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: err.message,
     });
   }
 };
-const getPendingJobs = async (req: Request, res: Response) => {
+
+const getPendingJobs = async (_req: Request, res: Response) => {
   try {
     const jobs = await jobService.getPendingJobs();
 
@@ -67,60 +93,59 @@ const getPendingJobs = async (req: Request, res: Response) => {
       success: true,
       data: jobs,
     });
-  } catch (error: any) {
+  } catch (err: any) {
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: err.message,
     });
   }
 };
 
-const getUrgentJobs = async (req: Request, res: Response) => {
+const getPremiumJobs = async (_req: Request, res: Response) => {
+  try {
+    const jobs = await jobService.getPremiumJobs();
+
+    return res.status(200).json({
+      success: true,
+      data: jobs,
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+const getUrgentJobs = async (_req: Request, res: Response) => {
   try {
     const jobs = await jobService.getUrgentJobs();
 
     return res.status(200).json({
       success: true,
-      count: jobs.length,
-      message: "Urgent jobs fetched successfully",
-      data: jobs,
-    });
-  } catch (error: any) {
-    console.error("Get Urgent Jobs Error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch urgent jobs",
-      error: error.message,
-    });
-  }
-};
-
-const getJobsByCategoryPreview = async (req: Request, res: Response) => {
-  try {
-    const jobs = await jobService.getJobsByCategoryPreview();
-
-    return res.status(200).json({
-      success: true,
-      data: jobs,
-    });
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-const getPremiumJobs = async (req: Request, res: Response) => {
-  try {
-    const jobs = await jobService.getPremiumJobs();
-
-    res.json({
-      success: true,
       data: jobs,
     });
   } catch (err: any) {
-    res.status(500).json({
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+const getJobsByCategory = async (req: Request, res: Response) => {
+  try {
+    const category = req.query.category as string | undefined;
+
+    const jobs = await jobService.getJobsByCategory(category);
+
+    return res.status(200).json({
+      success: true,
+      count: jobs.length,
+      data: jobs,
+    });
+  } catch (err: any) {
+    return res.status(500).json({
       success: false,
       message: err.message,
     });
@@ -130,13 +155,6 @@ const getPremiumJobs = async (req: Request, res: Response) => {
 const getJobById = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-
-    if (isNaN(id) || id <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid job ID",
-      });
-    }
 
     const job = await jobService.getJobById(id);
 
@@ -151,10 +169,10 @@ const getJobById = async (req: Request, res: Response) => {
       success: true,
       data: job,
     });
-  } catch (error: any) {
+  } catch (err: any) {
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: err.message,
     });
   }
 };
@@ -172,17 +190,26 @@ const updateJob = async (req: Request, res: Response) => {
     }
 
     const job = await jobService.updateJob(
-      Number(req.params.id),
+      Number(req.params?.id),
       req.body,
       userId,
       role,
     );
 
-    res.json({ success: true, message: "Updated", data: job });
+    return res.status(200).json({
+      success: true,
+      message: "Updated",
+      data: job,
+    });
   } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("UPDATE ERROR:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
+
 const deleteJob = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
@@ -199,25 +226,23 @@ const deleteJob = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      message: "Job deleted successfully",
+      message: "Deleted",
     });
-  } catch (error: any) {
+  } catch (err: any) {
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: err.message,
     });
   }
 };
 
 const approveJob = async (req: Request, res: Response) => {
   try {
-    const jobId = Number(req.params.id);
-
-    const job = await jobService.approveJob(jobId);
+    const job = await jobService.approveJob(Number(req.params.id));
 
     return res.status(200).json({
       success: true,
-      message: "Job approved & user upgraded to recruiter",
+      message: "Approved",
       data: job,
     });
   } catch (err: any) {
@@ -230,32 +255,36 @@ const approveJob = async (req: Request, res: Response) => {
 
 const rejectJob = async (req: Request, res: Response) => {
   try {
-    const id = Number(req.params.id);
-    const { rejectionReason } = req.body;
+    const job = await jobService.rejectJob(
+      Number(req.params.id),
+      req.body.rejectionReason,
+    );
 
-    const job = await jobService.rejectJob(id, rejectionReason);
-
-    return res.json({
+    return res.status(200).json({
       success: true,
-      message: "Job rejected",
+      message: "Rejected",
       data: job,
     });
   } catch (err: any) {
-    return res.status(500).json({ message: err.message });
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
 
 export const jobController = {
   createJob,
-  getAllJob,
+  getAllJobs,
+  getActiveJobs,
+  getPendingJobs,
+  getPremiumJobs,
+  getUrgentJobs,
+  getJobsByCategory,
   getJobById,
   updateJob,
   deleteJob,
   approveJob,
   rejectJob,
-  getPremiumJobs,
-  getJobsByCategoryPreview,
-  getActiveJobs,
-  getUrgentJobs,
-  getPendingJobs,
+  getMyJobs,
 };

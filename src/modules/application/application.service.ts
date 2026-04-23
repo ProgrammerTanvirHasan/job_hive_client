@@ -49,7 +49,31 @@ const getApplications = async (userId: string) => {
     },
   });
 };
+//////////////////////
 
+const getNotAppliedJobs = async (userId: string) => {
+  const jobs = await prisma.job.findMany({
+    where: {
+      AND: [
+        {
+          status: "APPROVED",
+        },
+        {
+          applications: {
+            none: {
+              userId,
+            },
+          },
+        },
+      ],
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return jobs;
+};
 const getApplicationsByJob = async (
   userId: string,
   jobId: number,
@@ -80,4 +104,5 @@ export const applicationService = {
   applyJob,
   getApplications,
   getApplicationsByJob,
+  getNotAppliedJobs,
 };

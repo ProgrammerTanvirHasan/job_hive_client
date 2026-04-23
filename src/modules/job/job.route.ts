@@ -7,21 +7,27 @@ import { validate } from "../../middleware/validate";
 
 const router = express.Router();
 
-router.get("/", jobController.getAllJob);
+router.get("/active", jobController.getActiveJobs);
+router.get("/pending", jobController.getPendingJobs);
+router.get("/premium", jobController.getPremiumJobs);
+router.get("/urgent", jobController.getUrgentJobs);
+router.get("/all", jobController.getAllJobs);
+router.get(
+  "/my-posts",
+  authMiddleware(Role.RECRUITER),
+  jobController.getMyJobs,
+);
+
+router.get("/search", jobController.getJobsByCategory);
+
 router.get("/:id", jobController.getJobById);
 
 router.post(
   "/",
   validate(createJobSchema),
   authMiddleware(Role.USER, Role.RECRUITER, Role.ADMIN),
-
   jobController.createJob,
 );
-router.get("/jobs/premium", jobController.getPremiumJobs);
-router.get("/jobs/all", jobController.getActiveJobs);
-router.get("/jobs/pending", jobController.getPendingJobs);
-router.get("/jobs/categories-preview", jobController.getJobsByCategoryPreview);
-router.get("/jobs/urgent-jobs", jobController.getUrgentJobs);
 
 router.patch(
   "/:id",
@@ -33,7 +39,7 @@ router.delete(
   "/:id",
   authMiddleware(Role.RECRUITER, Role.ADMIN),
   jobController.deleteJob,
-);``
+);
 
 router.put(
   "/admin/:id/approve",

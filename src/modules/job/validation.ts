@@ -4,9 +4,12 @@ export const createJobSchema = z.object({
   description: z.string().min(10),
   company: z.string().min(2),
   location: z.string().min(2),
-  category: z.string().min(2),
+  category: z
+    .string()
+    .min(2, "Category is required")
+    .transform((val) => val.trim().toLowerCase()),
 
-  salary: z.string().optional().nullable(),
+  salary: z.number().optional().nullable(),
 
   isPaid: z.boolean(),
 

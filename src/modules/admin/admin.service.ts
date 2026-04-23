@@ -18,7 +18,7 @@ const getDashboardStats = async () => {
     pendingJobs,
   };
 };
-
+//////////////////////////////
 const deleteJobsByCompany = async (company: string, role: string) => {
   if (role !== Role.ADMIN) {
     throw new Error("Not authorized");

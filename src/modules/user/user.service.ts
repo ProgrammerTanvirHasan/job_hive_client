@@ -30,34 +30,6 @@ const getUserById = async (id: string) => {
   return user;
 };
 
-const updateUser = async (
-  id: string,
-  data: {
-    name?: string;
-    image?: string;
-  },
-) => {
-  const existingUser = await prisma.user.findUnique({
-    where: { id },
-  });
-
-  if (!existingUser) {
-    throw new Error("User not found");
-  }
-
-  if (existingUser.status !== UserStatus.ACTIVE) {
-    throw new Error("User is not active");
-  }
-
-  return prisma.user.update({
-    where: { id },
-    data: {
-      name: data.name,
-      image: data.image,
-    },
-  });
-};
-
 const updateUserStatus = async (
   userId: string,
   status: "ACTIVE" | "BANNED",
@@ -77,6 +49,27 @@ const updateUserStatus = async (
   });
 };
 
+const updateUserService = async (userId: string, payload: any) => {
+  const { name, email } = payload;
+
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      ...(name && { name }),
+      ...(email && { email }),
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+    },
+  });
+
+  return updatedUser;
+};
 // const deleteUser = async (id: string) => {
 //   const existingUser = await prisma.user.findUnique({
 //     where: { id },
@@ -116,6 +109,6 @@ const updateUserStatus = async (
 export const userService = {
   getAllUsers,
   getUserById,
-  updateUser,
   updateUserStatus,
+  updateUserService,
 };
